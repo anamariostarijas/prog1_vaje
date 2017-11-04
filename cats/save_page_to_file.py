@@ -6,7 +6,11 @@ import csv
 cats_frontpage_basename = 'macke.html'
 cats_frontpage_url = 'http://www.bolha.com/zivali/male-zivali/macke/'
 base_url = 'http://www.bolha.com'
+<<<<<<< HEAD
 cats_dirname ='C:\Anamari\Documents\prog1_vaje'
+=======
+cats_dirname ='C:\prog1_vaje'
+>>>>>>> 83276c7488aed2d102fc43bcac64bea678cb64c4
 cats_frontpage_fn = os.path.join(cats_dirname, cats_frontpage_basename)
 csv_filename = 'cats.csv'
 
@@ -29,28 +33,28 @@ def save_string_to_file(text, directory, filename):
     the current directory.'''
     os.makedirs(directory, exist_ok=True)
     path = os.path.join(directory, filename)
-    with open(path, 'w') as file_out:
+    with open(path, 'w', encoding = 'utf8') as file_out:
         file_out.write(text)
-    return None
+    return 
 
 def download_frontpage_to_file():
     url_text = download_url_to_string(cats_frontpage_url)
+<<<<<<< HEAD
     file = save_string_to_file(url_text, cats_dirname, cats_frontpage_fn )
+=======
+    file = save_string_to_file(url_text, cats_dirname, cats_frontpage_basename)
+>>>>>>> 83276c7488aed2d102fc43bcac64bea678cb64c4
 
     
 def read_file_to_string(directory, filename):
     path = os.path.join(directory, filename)
-    with open(path, 'r') as file_in:
+    with open(path, 'r', encoding='utf8') as file_in:
         return file_in.read()
+#add open(path, 'r', encoding = 'utf8') if encoding doesn't work with your document
 
-
-# Define a function that takes a webpage as a string and splits it into
-# segments such that each segment corresponds to one advertisement. This
-# function will use a regular expression that delimits the beginning and end of
-# each ad. Return the list of strings.
-# Hint: To build this reg-ex, you can use your text editor's regex search functionality.
 #? makes the star to take just as much as necessery to match
 def split_into_ads(page_contents):
+<<<<<<< HEAD
     '''splits page into segments'''
     rx = re.compile(r'<div class="ad">(.*?)<div class="clear">', re.DOTALL)
     ads = rx.findall(page_contents)
@@ -63,8 +67,50 @@ def split_into_ads(page_contents):
 def undefined( TODO ):
     '''TODO'''
     TODO
+=======
+    '''splits page into segments, list of strings'''
+    #rx = re.compile(r'<div class="ad">(.*?)<div class="clear">', re.DOTALL)
+    ads = re.findall(r'<div class="ad">(.*?)<div class="clear">' , page_contents, re.DOTALL)
+    #split_file = page_contents.split(rx)
+    return ads
 
+def data_from_one_ad(ad):
+    '''takes a string and extracts name, price, description of one ad'''
+    rx = re.compile(r'<div class="ad">(.*?)'
+                    #r'<a title="(?P<title>.*?)".*?>.*?'
+                    r'<\/a><\/h3>(?P<description>.*?)<div class = "additionalInfo">(.*?)'
+                    #r'<div class="price"><span>(?P<price>.*?)<\span><\div>.*?'
+                    r'<div class="clear">'
+                    , re.DOTALL)
+    flags = re.DOTALL
+    for match in rx.finditer(ad):
+        data = match.groupdict() #returns a dictionary of matches
+        print(data)
 
+    #rx = re.match(r'<div class="ad">(.*?)'
+     #             r'<a title="(?P<title>.*?)"(.|\n)*?>(.|\n)*?<\/a><\/h3>(?P<description>.*?)<div class = "additionalInfo">(.|\n)*?'
+     #             r'<div class="price"><span>(?P<price>.*?)<\span><\div>.*?<div class="clear"><\div>'
+     #   , ad)
+    #matches = rx.groupdict() 
+    #return matches
+
+def data_from_file(directory, filename):
+    '''reads a page from a file and returns the list of dictionaries containing the information for each ad on that page'''
+    page_contents = read_file_to_string(directory, filename)
+    all_ads = split_into_ads(page_contents)
+    all_data = []
+    for ad in all_ads:
+        all_data.append(data_from_one_ad(ad))
+        print (all_data)
+    
+
+>>>>>>> 83276c7488aed2d102fc43bcac64bea678cb64c4
+
+########################################################################
+# We processed the data, now let's save it for later.
+########################################################################
+
+<<<<<<< HEAD
 
 # Write a function that reads a page from a file and returns the list of
 # dictionaries containing the information for each ad on that page.
@@ -78,6 +124,8 @@ def undefined( TODO ):
 # We processed the data, now let's save it for later.
 ########################################################################
 
+=======
+>>>>>>> 83276c7488aed2d102fc43bcac64bea678cb64c4
 def write_csv(fieldnames, rows, directory, filename):
     '''Write a CSV file to directory/filename. The fieldnames must be a list of
     strings, the rows a list of dictionaries each mapping a fieldname to a

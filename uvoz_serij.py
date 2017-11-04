@@ -23,7 +23,7 @@ stevilo_najdenih = 0
 for ujemanje in vzorec_serije.finditer(vsebina_strani):
     podatki = ujemanje.groupdict() #z groupdict nam da niz, vrne skupaj z imeni značk
     stevilo_najdenih += 1
-    stran_z_detajli = requests.get('http://www.imdb.com/title/tt{}/?ref_=adv_li_tt'.format(podatki['id']))
+    #stran_z_detajli = requests.get('http://www.imdb.com/title/tt{}/?ref_=adv_li_tt'.format(podatki['id']))
     print(podatki)
 print(stevilo_najdenih)
 
