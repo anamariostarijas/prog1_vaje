@@ -79,7 +79,7 @@ let mrDuck = {name = "Mr Duck";    ability = 7;    hp = 90000; skills = [Cripple
 let kYloReN = {name = "Kylo Ren";   ability = 589;  hp = 90;    skills = [Resurrect];                     race = Human}
 let snoop_dogg = {name = "Snoop Dogg"; ability = 420;  hp = 4000;  skills = [Blaze];                         race = Orc}
 
-type 'a option = None |Some w
+type 'a option = None |Some of 'a
 
 (* Write a function that computes the wizard with the most mana. *)
 let rec strongest_wizard (wizards : wizard list) : wizard option =
@@ -87,11 +87,11 @@ let rec strongest_wizard (wizards : wizard list) : wizard option =
 	|[] -> None
 	|w::ws -> let strongest_ws = strongest_wizard ws in
 	(match strongest_ws with
-	|None -> Some war
+	|None -> Some w
 	|Some v -> if w.ability > v.ability
 		then Some w
 		else Some v)
-	|[w:ws] -> strongest_wizard (wizards : ws)
+	
 (* Generalise strongest_wizard to a function max_list that computes the max of
    an arbitrary lists of type 'a.
   
@@ -103,24 +103,33 @@ let rec strongest_wizard (wizards : wizard list) : wizard option =
 let rec max_list (xs : 'a list) (max : 'a -> 'a -> 'a) : 'a option =
 	match xs with
 	|[] -> None
+	|x::xs -> 
+	(match max_list xs max with
+	|None -> Some x
+	|Some y -> Some (max x y)
+	)
 	
 
 
 (* Races have either high, normal, or low vulnerability to each school of
    magic. Represent these possibilities as a variant type. *)
-
+type volnerability = Normal |High | Low
 
 (* Write a function that computes the following vulnerabilities:
    Low vulnerability for orcs:necrotic, hobbits:fire, humans:angelic,
    High vulnerability    hobbit:necrotic, human:fire, orc:angelic
    otherwise normal
   *)
-(* let effectiveness (school : school) (race : race) : vulnerability =
-...
-*)
-
+  
+let effectiveness (school : school) (race : race) : volnerability = 
+	 match (race, school) with
+	 |(Orc,Necrotic) | (Hobbit,Fire) | (Human,Angelic) -> Low
+	 |(Hobbit,Necrotic) | (Human,Fire) | (Orc,Angelic) -> High
+	 |(_,_) -> Normal
+	 
 (* Write a function that computes how vulnerable a wizard is to a spell *)
-let vulnerable = failwith "todo"
+let vulnerable wizard (spells : spells) : volnerability = 
+	match wizard.race, wizard.spells
 
 
 (* Write a function that computes a damage coefficient. High vulnerability
