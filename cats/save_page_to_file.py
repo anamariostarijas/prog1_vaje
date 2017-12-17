@@ -56,25 +56,18 @@ def split_into_ads(page_contents):
 # advertisement and extracts from it the following data: Name, price, and
 # the description as displayed on the page.
 
-def data_from_one_ad(ad):
+def data_from_one_ad(block):
     '''takes a string and extracts name, price, description of one ad'''
-    rx = re.compile(r'<div class="ad">(.*?)'
-                    #r'<a title="(?P<title>.*?)".*?>.*?'
-                    r'<\/a><\/h3>(?P<description>.*?)<div class = "additionalInfo">(.*?)'
-                    #r'<div class="price"><span>(?P<price>.*?)<\span><\div>.*?'
-                    r'<div class="clear">'
-                    , re.DOTALL)
-    flags = re.DOTALL
-    for match in rx.finditer(ad):
-        data = match.groupdict() #returns a dictionary of matches
-        print(data)
 
-    #rx = re.match(r'<div class="ad">(.*?)'
-     #             r'<a title="(?P<title>.*?)"(.|\n)*?>(.|\n)*?<\/a><\/h3>(?P<description>.*?)<div class = "additionalInfo">(.|\n)*?'
-     #             r'<div class="price"><span>(?P<price>.*?)<\span><\div>.*?<div class="clear"><\div>'
-     #   , ad)
-    #matches = rx.groupdict() 
-    #return matches
+    rx = re.compile(r'title="(?P<title>.*?)"'
+                    r'.*?</h3>\s*(?P<description>.*?)\s*</?div'
+                    r'.*?class="price">(?P<price>.*?)</div',
+                    re.DOTALL)
+
+    data=re.search(rx, block)
+    ad_dict = data.groupdict()
+    return ad_dict
+
 
 def data_from_file(directory, filename):
     '''reads a page from a file and returns the list of dictionaries containing the information for each ad on that page'''
