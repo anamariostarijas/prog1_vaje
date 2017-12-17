@@ -11,3 +11,19 @@ import pandas as pd #ne rabimo označevati vsakič pandas
 #graf:
 #%matplotlib inline
 serije = pd.read_csv('serije.csv', index_col = 'id')
+serije.plot.scatter( , ) # točkovni graf
+plot.bar #za diskretne, kategorične spremenljivke
+
+##############################
+#NAIVNI BAYESOV KLASIFIKATOR
+##############################
+span: izračuna verjetnost, da je span, na podlagi besed
+serija je nekega žanra na podlagi opisa
+bayesov izrek: P(A presek B) = P(A) * P(B|A)
+P(serija žanra Ž|opis vsebuje besede b1, b2...bn)
+predpostavimo, da so besede med sabo neodvisne --> zato naivni
+P(b1|Ž) * P(b2|Ž)***P(bn|Ž)*P(Ž) / P(b1 ^...^bn)
+zanima nas le, kje je ta verj največja, zato lahko imenovalec pozabimo (povsod enak)
+
+--Avtomatično določanje žanrov
+verj_korena_pri_zanru.index.isin(['', ''])
