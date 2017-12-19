@@ -82,15 +82,10 @@ let rec zbrisi k l =
  ---------- *)
  
 let rec rezina i k l = 
-	match (i,k,l) with
-	|(_,_,[]) -> []
-	|(0, k, l) -> let (l1, l2) = razdeli k l in 
-	l2
-	|(i, 0, l) -> let (l1, l2) = razdeli i l in
-	l1
-	|(i, k, l) -> 
-	 
-	
+	let (l1, l2) = razdeli i l in 
+	let (s1, s2) = razdeli (k-i) l2 in
+	s1
+		
 
 (* Funkcija "vstavi x k l" na k-to mesto seznama l vrine element x.
  Če je k izven mej seznama, ga doda na začetek oz. konec.
@@ -101,8 +96,13 @@ let rec rezina i k l =
  - : int list = [1; 0; 0; 0; 0; 0]
  ---------- *)
 
-let vstavi x k l = ()
-
+let rec vstavi x k l = 
+	if k<0 then [x]@l else
+	(match (x ,k, l) with
+	|(x, _, []) -> [x]
+	|(x, 0, l) -> [x]@l
+	|(x, k, t::ts) -> t :: vstavi x (k-1) ts
+	)
 (* Funkcija "zavrti n l" seznam l zavrti za n mest v levo.
  Predpostavimo, da je n v mejah seznama.
  ----------
@@ -110,7 +110,9 @@ let vstavi x k l = ()
  - : int list = [3; 4; 5; 1; 2]
  ---------- *)
 
-let zavrti n l = ()
+let rec zavrti n l =
+	let (l1, l2) = razdeli n l in
+	l2@l1
  
 (* Funkcija "pobrisi x l" iz seznam l izbriše vse pojavitve elementa x.
  ----------
@@ -118,8 +120,12 @@ let zavrti n l = ()
  - : int list = [2; 3; 2; 3]
  ---------- *)
 
-let pobrisi x l = ()
-
+let rec pobrisi x l = 
+	match (x, l) with
+	|(x, []) -> []
+	|(x, hd::tl) -> if hd=x then pobrisi x tl else
+	hd :: pobrisi x tl
+	
 (* Funkcija "je_palindrom l" ugotovi ali seznam l predstavlja palindrom.
  Namig: Pomagaj si s pomožno funkcijo, ki obrne vrstni red elementov seznama. 
  ----------
@@ -129,7 +135,12 @@ let pobrisi x l = ()
  - : bool = false
  ---------- *)
  
-let je_palindrom l = ()
+let je_palindrom l =  
+  let rec obrni = function
+    | hd :: tl -> obrni tl @ [hd]
+	| [] -> []
+  in
+  l = obrni l
   
 (* Funkcija "max_po_komponentah l1 l2" vrne seznam, ki ima za elemente
  večjega od elementov na ustreznih mestih v seznamih l1 in l2.
@@ -138,7 +149,11 @@ let je_palindrom l = ()
  # max_po_komponentah [5; 4; 3; 2; 1] [0; 1; 2; 3; 4; 5; 6];;
  - : int list = [5; 4; 3; 3; 4]
  ---------- *)
-let max_po_komponentah l1 l2 = ()
+let rec max_po_komponentah l1 l2 = 
+	match (l1, l2) with
+	|(x::xs, hd::tl) -> max x hd :: max_po_komponentah xs tl
+	|([], l2) -> []
+	|(l1, []) -> []
   
 (* Funkcija "drugi_najvecji l" vrne drugo največjo vrednost v seznamu l.
  Ponovitve elementa se štejejo kot ena vrednost.
@@ -149,4 +164,10 @@ let max_po_komponentah l1 l2 = ()
  - : int = 10
  ---------- *)
  
-let drugi_najvecji l = ()
+let drugi_najvecji l = 
+  let rec najvecji = function
+    | [] -> failwith "Prekratek seznam."
+	| hd :: [] -> hd
+	| hd :: tl -> max hd (najvecji tl)
+  in
+  najvecji (pobrisi (najvecji l) l)

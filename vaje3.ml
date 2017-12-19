@@ -37,6 +37,14 @@ type wizard = {name : string;
 			   ability: mana;
 			   race: race;
 			   skills: skills}
+			   
+let string_of_spell = function
+  | Blaze -> "Blaze"
+  | Firewall -> "Firewall"
+  | Renounce -> "Renounce"
+  | Banish -> "Banish"
+  | Resurrect -> "Resurrect"
+  | Cripple -> "Cripple"
 
 
 (* Write a function that indicates for each spell which school it belongs to. *)
@@ -85,7 +93,8 @@ type 'a option = None |Some of 'a
 let rec strongest_wizard (wizards : wizard list) : wizard option =
 	match wizards with
 	|[] -> None
-	|w::ws -> let strongest_ws = strongest_wizard ws in
+	|w::ws -> 
+	let strongest_ws = strongest_wizard ws in
 	(match strongest_ws with
 	|None -> Some w
 	|Some v -> if w.ability > v.ability
@@ -128,28 +137,32 @@ let effectiveness (school : school) (race : race) : volnerability =
 	 |(_,_) -> Normal
 	 
 (* Write a function that computes how vulnerable a wizard is to a spell *)
-let vulnerable wizard (spells : spells) : volnerability = 
-	match wizard.race, wizard.spells
-
+let vulnerable spell wizard = effectiveness (school_of_spell) wizard.race
 
 (* Write a function that computes a damage coefficient. High vulnerability
    incurs double damage, low vulnerability half damage. *)
 
-
+let coef = function 
+	|Low -> 0.5
+	|Normal -> 1.0
+	|High -> 2.0
+	
 (* Write a function that calculates how much damages a spell causes to a
    wizard, computed as the mana it uses times the vulnerability coefficient.
    Hint: float_of_int
 *)
 
-
+let damage_caused spell target =
+	int_of_float (float_of_int (mana_of_spell) *. (coef (volnerable spell target)))
 (* Write a function that calculates the stats of a wizard after getting
    attacked by a particular spell.  *)
 
-
+let attack wizard spell = {wizard with hp = wizard.hp - damage_caused spell wizard}
 (* Write a function cast_spells that casts each of the skills of a wizard, or
    as many as he has mana for. Return the updated caster and the list of
    spells he managed to cast *)
-let cast_spells (caster : wizard) : wizard * spell list = failwith "todo"
+let cast_spells (caster : wizard) : wizard * spell list = 
+	failwith "todo"
 
 
 (* Write a function that stands off two wizard in a duel. If the attacker is
@@ -159,4 +172,5 @@ let cast_spells (caster : wizard) : wizard * spell list = failwith "todo"
 let rec duel (attacker : wizard) (defender : wizard) : wizard =
   failwith "todo"
 
-let _ = duel frodo snoop_dogg
+(*let _ = duel frodo snoop_dogg
+*)

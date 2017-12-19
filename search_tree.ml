@@ -101,23 +101,22 @@ let is_empty t =
 	|Node(_,_,_) -> false
 	
 let rec prune directions t = 
-	match (directions, t) with
-	|((_::_), Empty) -> None
-	|([], Node(l, x, r)) -> Some (Node(l, x, r))
-	|(dir::dirs, Node(l,x,r)) ->
-	(match dir with
-	|Left ->
-		let l_pruned -> prune dirs l in 
-		(match l pruned with
+	match t with
+	|Empty -> None
+	|Node(l,x,r) ->
+	(match directions with
+	|[] -> Some Empty
+	|Left::dirs ->
+		(match prune dirs l with
 		|None -> None
-		| Some(l_pruned) -> Some (Node(l_pruned,x,r))
-	|Right ->
-		let r_pruned -> prune dirs r in
-		(match r pruned with
+		|Some new_l -> Some (Node(new_l,x,r))
+	)
+	|Right::dirs ->
+		(match prune dirs r with
 		|None -> None
-		|Some(r_pruned)-> Some (Node(l,x, r_pruned))
+		|Some new_r -> Some (Node(l,x,new_r))
 		)
-	
+	)
 	
 (* The function "map_tree f t"  [('a -> 'b) -> 'a tree -> 'b tree] maps the
    nodes of the tree t with the function f.
@@ -128,7 +127,10 @@ let rec prune directions t =
    Node (Node (Empty, true, Empty), true, Node (Empty, true, Empty)))
    ---------- *)
 
-let rec map_tree f t = ()
+let rec map_tree f t = 
+	match t with
+	|Empty -> Empty
+	|Node(l,x,r) -> Node(map_tree f l, f x, map_tree f r)
 
 (* The function "list_of_tree t" ['a tree -> 'a list] maps the data of the tree
    into a list. If the tree is a binary search tree the returned list should be
@@ -138,7 +140,9 @@ let rec map_tree f t = ()
    - : int list = [0; 2; 5; 6; 7; 11]
    ---------- *)
 
-let rec list_of_tree t = ()
+let rec list_of_tree = function
+	|Empty -> []
+	|Node(l,x,r) -> (list_of_tree l) @ [x] @ (list_of_tree r)
 
 (* The function "is_bst t" ['a tree -> bool] checks wheter a tree is a
    binary search tree (BST). Assume that a tree has no repetitions (a tree
@@ -151,7 +155,12 @@ let rec list_of_tree t = ()
    - : bool = false
    ---------- *)
 
-let rec is_bst t = ()
+let rec is_bst t =
+  let rec is_ordered = function
+    | [] | _::[] -> true
+    | x::hd::tl -> if x<=hd then is_ordered (hd::tl) else false
+  in t |> list_of_tree |> is_ordered (* = is_ordered (list_of_tree t)*)
+
 
 (*------------------------------------------------------------------------------
    In the remaining exercises the variable name bst assumes a BST input.
@@ -167,15 +176,28 @@ let rec is_bst t = ()
    - : bool = false
    ---------- *)
 
-let rec insert x bst = ()
+let rec insert x bst = 
+	match bst with
+	|Empty -> leaf x
+	|Node(l,y,r) as t-> 
+		if x < y then Node(insert x l, y, r) 
+		else
+		if x=y then t
+		else Node(l, y, insert x r)
 
-let rec member x bst = ()
-
+let rec member x = function
+	| Empty -> false
+	| Node(l, y, r) ->
+    if x < y then member x l
+    else if x=y then true
+    else member x r
 (* Write the function "member2", where you do not assume a BST structure.
    Think about the differences of time complexity for "member" and "member2"
    if you assume that the tree has n nodes and a depth of log(n). *)
 
-let rec member2 x t = ()
+let rec member2 x = function
+	| Empty -> false
+	| Node(l, y, r) -> x=y || (member2 x l) || (member2 x r)
 
 (* The function "bst_of_list l" ['a list -> 'a tree] forms a bst from a list.
    Hint: in lectures the professor first defined the function "insert".
@@ -184,7 +206,8 @@ let rec member2 x t = ()
    - : bool = true
    ---------- *)
 
-let bst_of_list l = ()
+let bst_of_list l = 
+	List.fold_right insert l Empty
 
 (* Create a function "tree_sort l" ['a list -> 'a list] that sorts the list l
    by combining previously defining functions.
