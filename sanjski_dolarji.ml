@@ -37,10 +37,14 @@ let denominations = [1; 4; 7; 13; 28; 52; 91; 365]
 *)
 
 let rec bills_greedy n =
-	if n in denominations then n else
-		let rec najvecji k = if denominations[k] < n then denominations[8] else najvecji (k-1)
-		in bills_greedy (najvecji 8)
 	
+	if List.mem n denominations then n 
+	else
+		for k = 0 to (List.length denominations + 1) do
+			t = ref k
+			let rec najvecji t = if denominations[!t] < n then denominations[!t] else najvecji (t! := t-1)
+			in bills_greedy (najvecji 8)
+		done;
 	
 
 (* 2.i) Opišite in analizirajte rekurzivni algoritem, ki za dani k izračuna

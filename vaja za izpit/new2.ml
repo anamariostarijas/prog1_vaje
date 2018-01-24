@@ -45,9 +45,8 @@ let range_not_tailrec n =
 		
 let range n = 
 	let rec range_down n acc = (*nosi s seboj delni rezultat*)
-		if n<=0
-		then acc
-		else range_down (n-1) (n::acc)
+		if n<=0 then acc
+		else range_down (n-1) (n::acc) 
 	in range_down n []
 	
 (* The function "map f l" accepts a list l = [l0; l1; l2; ...] and a function f
@@ -58,18 +57,12 @@ let range n =
  - : int list = [2; 3; 4; 5; 6]
  ---------- *)
 
-let rec map f l =
-	match l with
-	|[] -> []
-	|x::xs -> [f x] @ (map f xs) 
-	
-let rec map_rec f l =
-	match l with
-	|[] -> []
-	|x::xs -> let res_rec = map_rec f xs in
-	(f x) :: res_rec 
-	
-
+let map f l =
+	let rec recursive_result f l acc = 
+		match l with
+		|[]-> reverse acc
+		|x::xs -> recursive_result f xs (f x :: acc)
+	in recursive_result f l []
 (* The function "map_tlrec" is the tail recursive version of map.
  ----------
  # let plus_two = (fun x -> x+2) in
@@ -94,14 +87,12 @@ let map_tlrec f l =
  - : int list = [0; 1; 2; 5; 6; 7]
  ---------- *)
 
-let rec mapi f l = 
-	let rec mapping l acc i =
-	match l with
-	|[] -> reverse acc
-	|x::xs -> mapping xs ((f i x):: acc) (i+1)
-	in mapping l [] 0 	
-	
-		
+let mapi f l = 
+	let rec recursive_result f n l acc = 
+		match (n, l) with
+		|(_, []) -> reverse acc
+		|(n, x::xs) -> recursive_result f (n+1) xs ((f x n) :: acc) 
+	in recursive_result f 0 l []	
 		
 (* The function "zip l1 l2" accepts lists l1 = [l1_0; l1_1; l1_2; ...] and
  l2 = [l2_0; l2_1; l2_2; ...] and returns the list [(l1_0,l2_0); (l1_1,l2_1); ...].
@@ -115,10 +106,9 @@ let rec mapi f l =
 
 let rec zip l1 l2 = 
 	match (l1, l2) with	
-	|(x::xs, hd::tl) -> [(x, hd)]@zip xs tl
 	|([], []) -> []
-	|([], l2) -> failwith "Different lengths."
-	|(l1,[]) -> failwith "Different lengths."
+	|(x::xs, hd::tl) -> (x, hd) :: zip xs tl 
+	|(_,[])|([], _) -> failwith "Different lengths."
 	
 
 	(* The function "zip_enum_tlrec l1 l2" accepts lists l1 = [l1_0; l1_1; l1_2; ...] 
@@ -131,13 +121,13 @@ let rec zip l1 l2 =
  ---------- *)
 
 let zip_enum_tlrec l1 l2 = 
-	let rec ziping l1 l2 acc i =
-	match (l1, l2) with
-	|([],[]) -> reverse acc
-	|([], _)|(_, []) -> failwith "Different lengths."
-	|(x::xs, hd::tl) -> ziping xs tl ([(i, x, hd)]@acc) (i+1)
-	in ziping l1 l2 [] 0
-
+	let rec recursive_result l1 l2 n acc =
+		match (l1, l2) with
+		|([], []) -> reverse acc
+		|(x::xs, hd::tl) -> recursive_result xs tl (n+1) ((n, x, hd) :: acc)
+		|(_,[])|([], _) -> failwith "Different lengths."
+	in recursive_result l1 l2 0 []
+	
 (* The function "unzip l" accepts a list l = [(a0, b0); (a1, b2); ...]
  and returns the pair ([a0; a1; ...], [b0; b1; ...]).
  ----------
@@ -148,8 +138,8 @@ let zip_enum_tlrec l1 l2 =
 let rec unzip l = 
 	match l with 
 	|[] -> ([], [])
-	|(x,y)::xs -> let (l1, l2) = unzip xs in
-	(x::l1, y::l2)
+	|(x, y)::xs -> let (l1, l2) = unzip xs 
+	in (x::l1, y::l2)
 	
 (* The function "unzip_tlrec l" is the tail recursive version of unzip.
  ----------
@@ -190,10 +180,10 @@ let rec fold_left_no_acc f l =
  ---------- *)
 
 let apply_sequence f x n = 
-	let rec applying f x acc n =
-	if n<0 then reverse acc else
-	applying f (f x) (x::acc) (n-1) in
-	applying f x [] n
+	let rec recursive_result f x acc n =
+		if n<=0 then reverse acc else
+		recursive_result f (f x) (x :: acc ) (n-1)
+	in recursive_result f x [] n
 
 (* The function "filter f l" returns the list of elements for which 
  (f x) equals true.
@@ -202,11 +192,20 @@ let apply_sequence f x n =
  - : int list = [4; 5]
  ---------- *)
 
-let rec filter f l = 
-	match l with
+let filter_rec f l = 
+	let rec recursive_result f l acc =
+		match l with
+		|[] -> reverse acc
+		|x::xs -> if f x then recursive_result f xs (x::acc) else
+				recursive_result f xs acc
+	in recursive_result f l []
+	
+let rec filter f = function
 	|[] -> []
-	|x::xs -> if f x then x::filter f xs else
-	filter f xs
+	|x::xs -> if f x then x :: filter f xs else
+		filter f xs 
+
+	
 
 (* The function "exists f l" checks if there exists an element of the list l
  for which the function f returns true, otherwise it returns false.
@@ -218,10 +217,9 @@ let rec filter f l =
  - : bool = false
  ---------- *)
 
-let rec exists f l = 
-	match l with
+(*let rec exists f l = function
 	|[] -> false
-	|x::xs -> f x || exists f xs
+	|x::xs -> if f x then true else exists f xs*)
 	
 
 (* The function "first f none_value l" returns the first element of the list l
@@ -272,6 +270,25 @@ let rec first f none_value l =
   ("Mr Duck", "Protect"); ("Kylo Ren", "Banish"); ("Snoop Dogg", "Blaze")]
  ----------*)
 
-let able_protectors spells wizards = ()
-
-let fails_on spells wizards = ()
+let able_protectors spells wizards = 
+	let (l1, l2) = unzip_tlrec spells in
+	let rec recursive_result l1 l2 wizards acc =
+		let sum l = List.fold_left (+) 0 l in
+		(match (l1, wizards) with
+		|(_,[]) -> acc
+		|(s, (w, number)::ws) -> if sum l2 <= number then recursive_result l1 l2 ws (w::acc) 
+			else recursive_result l1 l2 ws acc
+		)
+	in recursive_result l1 l2 wizards []
+	
+let fails_on spells wizards = 
+	let able_wiz = able_protectors spells wizards in
+	let rec recursive_result spells wizards acc =
+		(match (spells, wizards) with  
+		|(s, (w, can)::ws as wizards) -> if List.mem w able_wiz then recursive_result s ws ((w, "")::acc) else
+			(match (s, (w, can)::ws) with
+			|((spell, worth):: xs as spel, (wizard, can)::ws) -> if can<worth then recursive_result spel ws ((wizard, spell)::acc) else
+				recursive_result xs ((wizard, can - worth)::ws) acc
+			|(_, []) -> reverse acc
+		)	)
+	in recursive_result spells wizards []

@@ -103,18 +103,18 @@ let is_empty t =
 let rec prune directions t = 
 	match t with
 	|Empty -> None
-	|Node(l,x,r) ->
+	|Node(l,x,r) -> 
 	(match directions with
 	|[] -> Some Empty
-	|Left::dirs ->
+	|Left::dirs -> 
 		(match prune dirs l with
 		|None -> None
-		|Some new_l -> Some (Node(new_l,x,r))
-	)
+		|Some new_l -> Some (Node(new_l, x, r))
+		)
 	|Right::dirs ->
 		(match prune dirs r with
 		|None -> None
-		|Some new_r -> Some (Node(l,x,new_r))
+		|Some new_r -> Some (Node(l, x, new_r))
 		)
 	)
 	
@@ -127,8 +127,7 @@ let rec prune directions t =
    Node (Node (Empty, true, Empty), true, Node (Empty, true, Empty)))
    ---------- *)
 
-let rec map_tree f t = 
-	match t with
+let rec map_tree f = function
 	|Empty -> Empty
 	|Node(l,x,r) -> Node(map_tree f l, f x, map_tree f r)
 
@@ -179,12 +178,10 @@ let rec is_bst t =
 let rec insert x bst = 
 	match bst with
 	|Empty -> leaf x
-	|Node(l,y,r) as t-> 
-		if x < y then Node(insert x l, y, r) 
-		else
-		if x=y then t
-		else Node(l, y, insert x r)
-
+	|Node(l, s, r) as t-> if x < s then Node(insert x l, s, r) else
+					if x=s then t
+					else Node(l, s, insert x r)
+	
 let rec member x = function
 	| Empty -> false
 	| Node(l, y, r) ->
@@ -216,7 +213,10 @@ let bst_of_list l =
    - : string list = ["a"; "b"; "c"; "d"; "e"; "f"]
    ---------- *)
 
-let tree_sort l = ()
+let tree_sort l =
+	let bst = bst_of_list l in
+	list_of_tree bst 
+	
 
 (* The function "succ bst" ['a tree -> 'a option] returns the succesor of the
    tree root, if it exists. For instance, for bst = Node(l, x, r) it returns
@@ -230,10 +230,25 @@ let tree_sort l = ()
    - : int option = None
    ---------- *)
 
-let succ bst = ()
-
-let pred bst = ()
-
+let succ bst =
+	let rec min = function
+		| Empty -> None
+		| Node(Empty, x, _) -> Some x
+		| Node(l, _, _) -> min l
+	in
+	match bst with
+	| Empty -> None
+	| Node(_, _, r) -> min r
+  
+let pred bst = 
+	let rec max = function
+		| Empty -> None
+		| Node(_, x, Empty) -> Some x
+		| Node(_, _, r) -> max r
+	in
+	match bst with
+	| Empty -> None
+	| Node(l, _, _) -> max l
 (* In lectures you mentioned multiple different algorithms for deletion.
    One uses "succ" and the other "pred".
    Write a function "delete x bst" ['a tree -> 'a tree], that deletes the
@@ -247,7 +262,15 @@ let pred bst = ()
    Node (Node (Empty, 6, Empty), 11, Empty))
    ---------- *)
 
-let rec delete x bst = ()
+let rec delete x = function
+	|Empty -> Empty
+	|Node(l,y,r) as t -> 
+	if x<y then Node(delete x l, y, r)
+	else if x>y then Node(l, y, delete x r)
+	else match succ t with
+	|None -> l 
+	|Some n -> let clean_r = delete n r in
+        Node(l, n, clean_r)
 
 (* An additional option is to change the type of the tree. Define a new tree
    type that additionally contains an information about its state, that can be
@@ -255,8 +278,9 @@ let rec delete x bst = ()
 
 type state = Exists | Ghost
 
-type 'a phantom_tree = unit
-
+type 'a phantom_tree = 
+	| P_Empty
+	| P_Node of 'a phantom_tree * 'a * 'a phantom_tree * state
 (* The function "phantomize t" ['a tree -> 'a phantom_tree], that maps a regular
    tree into a phantom tree.
    Then write the function "kill x pt" ['a -> 'a phantom_tree -> 'a phantom_tree]
@@ -275,9 +299,19 @@ type 'a phantom_tree = unit
    P_Node (P_Node (P_Empty, 3, P_Empty, Ghost), 4, P_Empty, Exists), Exists)
    ---------- *)
 
-let rec phantomize t = ()
+let rec phantomize = function 
+	|Empty -> P_Empty
+	|Node(l,x,r) -> P_Node(phantomize l, x, phantomize r, Exists)
 
-let rec kill x pt = ()
+let rec kill x = function
+	| P_Empty -> P_Empty
+    | P_Node(p_l, y, p_r, s) ->
+    if x < y then
+      P_Node(kill x p_l, y, p_r, s)
+    else if x > y then
+      P_Node(p_l, y, kill x p_r, s)
+    else
+      P_Node(p_l, y, p_r, Ghost)
 
 (* The function "unphantomize pt" ['a phantom_tree -> 'a tree] that maps a
    phantom tree to a regular tree, that only contains existing states.
@@ -288,7 +322,15 @@ let rec kill x pt = ()
    - : int tree = Node (Node (Node (Empty, 2, Empty), 6, Empty), 11, Empty)
    ---------- *)
 
-let unphantomize pt = ()
+let unphantomize pt = 
+	let rec list_of_phantom_tree = function
+    | P_Empty -> []
+    | P_Node(l, x, r, Ghost) ->
+      (list_of_phantom_tree l) @ (list_of_phantom_tree r)
+    | P_Node(l, x, r, Exists) ->
+      (list_of_phantom_tree l) @ [x] @ (list_of_phantom_tree r)
+    in
+    pt |> list_of_phantom_tree |> bst_of_list
 
 (*========== Ideas for additional exercises ==========*)
 (*

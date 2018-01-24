@@ -88,15 +88,15 @@ let _ = Cmp_Int_inv.compare (-9000) 42;;
    of elements el, an empty priority queue, and operations to push onto and safely pop
    elements off the priority queue. Pop returns the new priority queue and the highest-priority
    element if the priority queue is non-empty. *)
-(*
+
 module type Priority_Queue = sig
     type h
     type el
     val empty : h
     val pop : h -> (h * el) option
-    val push : ...
+    val push : 
   end
- *)
+ 
 
 
 (* We can implement a priority queue as a sorted list. Write a functor that takes a

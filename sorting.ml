@@ -32,7 +32,7 @@ let rec insert y = function
 (* The empty list is sorted. We can sort a list by consecutively inserting all
    of its elements into the empty list. Use this idea to write insertion_sort
    using List.fold_left and insert. *)
-let rec ins_sort l = 
+let ins_sort l = 
 	List.fold_left (fun acc x -> insert x acc) [] l
 
 (* Write a recursive function that takes a list l and if l is non-empty,
@@ -40,8 +40,21 @@ let rec ins_sort l =
    l and l_without_z is l with the first occurance of z removed. *)
 let rec min_and_rest = function 
 	|[] -> None
-	|x::xs -> 
-		let rec remove_once z l =failwith""
+	|x::xs as l -> 
+		let rec aux y = function
+        | [] -> y
+        | x::xs -> aux (min x y) xs
+		in
+        
+		let rec l_without_z z = function
+			|[] -> failwith "pf"
+			|x::xs -> if x=z then xs else x :: l_without_z z xs
+			
+		in 
+		let z = aux x xs in
+		
+		Some (z, l_without_z z l)
+		
 
 
 (* Selection sort works by keeping a list l partitioned into a sublist that is
@@ -50,8 +63,13 @@ let rec min_and_rest = function
    part. *)
 
 (* Use min_and_rest to implement selection sort as a recursive function. *)
-let rec selection_sort l = failwith "todo"
-
+let rec selection_sort l =
+	let rec recursive_res s acc =
+		match min_and_rest s with
+		|None -> List.rev acc
+		|Some(x, xs) -> recursive_res xs (x::acc)
+	in recursive_res l []
+	
 
 (* When working with arrays instead of lists, selection sort can work
    "in-place", i.e. without creating intermediate copies of (parts of) the
@@ -63,16 +81,34 @@ let rec selection_sort l = failwith "todo"
    end of the array, the input is sorted. *)
 
 (* Write a function swap a i j that exchanges a.(i) and a.(j) *)
-let swap a i j = failwith "todo"
+let swap a i j = 
+	let t = a.(i) in 
+	a.(i) <- a.(j);  a.(j) <- t
 
 (* Write a function index_min a lower upper that computes the index of the
    smallest element in a between indices lower and upper. Example:
    index_min [|0; 2; 9; 3; 6|] 2 4 = 4 *)
-let index_min a lower upper = failwith "todo"
+let index_min a lower upper = 
+	let index_min = ref lower in 
+	for i = lower to upper do
+		if a.(i) < a.(!index_min) then 
+			index_min := i 
+	done;
+	!index_min
+	
+	
 
 (* Implement in-place selection sort. *)
-let selection_imperative a = failwith "todo"
+let selection_imperative a = 
+	let index_end = Array.length a - 1 in
+	for boundary_sorted = 0 to index_end do
+		let i= index_min a boundary_sorted index_end in
+		swap a i boundary_sorted
+	done
 
 (* To test your array-function, you can turn it into a function that sorts
    lists by using Array.of_list and Array.to_list. *)
-let selection_imperative_list l = failwith "todo"
+let selection_imperative_list l = 
+	let a = Array.of_list l in
+	selection_imperative a;
+	Array.to_list a
